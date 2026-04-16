@@ -1,0 +1,13 @@
+Django>=5.0
+djangorestframework>=3.14
+django-cors-headers>=4.3
+drf-yasg>=1.21
+psycopg2-binary>=2.9
+celery>=5.3
+redis>=5.0
+neo4j>=5.14
+langchain>=0.1.0
+langgraph>=0.0.26
+python-dotenv>=1.0
+openai>=1.14
+dj-database-url>=2.1.0

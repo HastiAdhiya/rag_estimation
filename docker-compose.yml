@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  db:
+    image: ankane/pgvector
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    ports:
+      - "5435:5432"
+
+  neo4j:
+    image: neo4j:5.12
+    volumes:
+      - neo4j_data:/data
+    environment:
+      - NEO4J_PLUGINS=["apoc"]
+    ports:
+      - "7476:7474"
+      - "7689:7687"
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6382:6379"
+
+  web:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "8003:8000"
+    depends_on:
+      - db
+      - redis
+
+  celery:
+    build: .
+    command: celery -A backend worker -l info
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - redis
+
+volumes:
+  postgres_data:
+  neo4j_data:
