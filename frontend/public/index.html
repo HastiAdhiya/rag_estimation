@@ -1,0 +1,150 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAGE | Multi-Agent Graph Estimation</title>
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <div class="mage-wrapper">
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <svg width="32" height="32" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M50 5L95 27.5V72.5L50 95L50 95L5 72.5V27.5L50 5Z" stroke="var(--accent-primary)"
+                        stroke-width="4" />
+                    <circle cx="50" cy="50" r="15" fill="var(--accent-primary)" />
+                </svg>
+                <span>MAGE</span>
+            </div>
+            <nav>
+                <ul class="nav-links">
+                    <li class="nav-item active"><i class="fas fa-th-large"></i> Dashboard</li>
+                    <li class="nav-item"><i class="fas fa-history"></i> History</li>
+                    <li class="nav-item"><i class="fas fa-project-diagram"></i> Graphs</li>
+                    <li class="nav-item"><i class="fas fa-cog"></i> Settings</li>
+                </ul>
+            </nav>
+        </aside>
+
+        <div class="main-content">
+            <header class="top-bar">
+                <div class="search-bar" style="color: var(--text-muted);">
+                    <i class="fas fa-search"></i> <span style="margin-left: 0.5rem;">Explore projects...</span>
+                </div>
+                <div class="user-profile" style="display: flex; align-items: center; gap: 1rem;">
+                    <span class="text-secondary">Admin User</span>
+                    <div
+                        style="width: 32px; height: 32px; border-radius: 50%; background: var(--accent-primary); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.8rem;">
+                        AD</div>
+                </div>
+            </header>
+
+            <div class="mage-container">
+                <main>
+                    <!-- 1. Ingestion -->
+                    <section class="card" id="ingestion-section">
+                        <h2><i class="fas fa-file-import"></i> 1. Project Ingestion</h2>
+                        <div class="ingestion-grid">
+                            <div class="upload-zone" id="drop-zone"
+                                onclick="document.getElementById('file-input').click()">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <p>Upload PRS or SRS Documents</p>
+                                <span class="text-muted">PDF, DOCX, CSV, TXT</span>
+                                <input type="file" id="file-input" hidden>
+                            </div>
+                            <div>
+                                <textarea id="text-input" placeholder="Or paste your detailed requirements here..."
+                                    rows="6"></textarea>
+                                <button class="btn btn-primary" onclick="submitProject()"
+                                    style="width: 100%; margin-top: 1rem;">
+                                    <i class="fas fa-magic"></i> Start Estimation
+                                </button>
+                            </div>
+                        </div>
+                        <div id="upload-status" class="status-msg" style="margin-top: 1rem; text-align: center;"></div>
+                    </section>
+
+                    <!-- 2. Agent Orchestra -->
+                    <section class="card" style="display: none;" id="agent-section">
+                        <h2><i class="fas fa-microchip"></i> 2. AI Agent Dashboard</h2>
+                        <div class="agent-board">
+                            <div class="agent-card" id="agent-clarifier">
+                                <div class="icon">💬</div>
+                                <h4>Clarifier</h4>
+                                <p>Resolving Ambiguities</p>
+                            </div>
+                            <div class="agent-card" id="agent-retriever">
+                                <div class="icon">🔍</div>
+                                <h4>Retriever</h4>
+                                <p>GraphRAG Analysis</p>
+                            </div>
+                            <div class="agent-card" id="agent-decomposer">
+                                <div class="icon">🧩</div>
+                                <h4>Decomposer</h4>
+                                <p>Task Breakdown</p>
+                            </div>
+                            <div class="agent-card" id="agent-estimator">
+                                <div class="icon">📊</div>
+                                <h4>Estimator</h4>
+                                <p>Effort Calculation</p>
+                            </div>
+                            <div class="agent-card" id="agent-validator">
+                                <div class="icon">🛡️</div>
+                                <h4>Validator</h4>
+                                <p>Risk Assessment</p>
+                            </div>
+                            <div class="agent-card" id="agent-feedback">
+                                <div class="icon">📈</div>
+                                <h4>Feedback</h4>
+                                <p>Learning & Tuning</p>
+                            </div>
+                        </div>
+
+                        <!-- Clarification Interface (Hidden initially) -->
+                        <div id="clarify-chat"
+                            style="display: none; margin-top: 2rem; border-top: 1px solid var(--glass-border); padding-top: 1.5rem;">
+                            <div class="text-secondary" style="margin-bottom: 1rem; font-size: 0.9rem;">
+                                <i class="fas fa-question-circle"></i> The Clarifier Agent needs more information:
+                            </div>
+                            <div id="clarify-questions" style="margin-bottom: 1rem;"></div>
+                            <textarea id="clarify-response" placeholder="Type your answers here..." rows="3"></textarea>
+                            <button class="btn btn-primary" onclick="submitAnswers()" style="margin-top: 0.5rem;">
+                                Submit Answers
+                            </button>
+                        </div>
+                    </section>
+
+                    <!-- 3. Final Result -->
+                    <section class="card" style="display: none;" id="results-section">
+                        <h2><i class="fas fa-chart-line"></i> 3. Estimation Report</h2>
+                        <div class="results-grid">
+                            <div class="result-item">
+                                <div class="result-label">Predicted Effort</div>
+                                <div class="result-value" id="result-effort">--</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="result-label">Confidence Score</div>
+                                <div class="result-value" id="result-confidence">--</div>
+                            </div>
+                        </div>
+                        <div id="result-details" style="margin-top: 2rem; color: var(--text-secondary);">
+                            <!-- Agent logs or tasks summary -->
+                        </div>
+                        <button class="btn btn-secondary" onclick="location.reload()" style="margin-top: 2rem;">
+                            <i class="fas fa-undo"></i> New Analysis
+                        </button>
+                    </section>
+                </main>
+            </div>
+        </div>
+    </div>
+
+    <script src="{% static 'script.js' %}"></script>
+</body>
+
+</html>
