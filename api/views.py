@@ -70,8 +70,9 @@ class EstimationViewSet(viewsets.ViewSet):
         if not project_id:
             return Response({"error": "project_id required"}, status=status.HTTP_400_BAD_REQUEST)
         
-        # Update status to trigger poller transition
-        EstimationResult.objects.filter(project_id=project_id).update(status="clarifying")
+        from .tasks import run_estimation_workflow
+        # trigger celery
+        run_estimation_workflow.delay(project_id, "clarifying")
         
         return Response({
             "status": "success",
@@ -96,8 +97,8 @@ class EstimationViewSet(viewsets.ViewSet):
 
     @action(detail=True, methods=['post'])
     def respond(self, request, pk=None):
-        # Simulate moving to next agent
-        EstimationResult.objects.filter(project_id=pk).update(status="retrieving")
+        from .tasks import run_estimation_workflow
+        run_estimation_workflow.delay(pk, "retrieving", request.data.get("answers", ""))
         return Response({
             "status": "success",
             "message": "Clarification received. Retriever agent engaged."
